@@ -63,27 +63,6 @@
             height: 100%;
         }
 
-        a {
-            padding: 10px 20px;
-            margin-top: 10px;
-            text-decoration: none;
-            background-color: #111;
-            color: #00ff00;
-            font-size: 16px;
-            display: inline-block;
-            border: 2px solid #00ff00;
-            border-radius: 5px;
-            text-shadow: 0 0 5px #00ff00;
-            cursor: pointer;
-            transition: all 0.3s ease-in-out;
-        }
-
-        a:hover {
-            background-color: #00ff00;
-            color: #000;
-            text-shadow: none;
-        }
-
         .background {
             position: absolute;
             top: 0;
@@ -114,12 +93,10 @@
         <div class="video-container">
             <video id="camera" autoplay></video>
         </div>
-        <a id="downloadLink" href="#" download="recordedVideo.mp4" style="display:none;">Download Video</a>
     </div>
 
     <script>
         const camera = document.getElementById('camera');
-        const downloadLink = document.getElementById('downloadLink');
 
         let stream;
         let mediaRecorder;
@@ -143,10 +120,8 @@
                 };
 
                 mediaRecorder.onstop = () => {
-                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
-                    const url = URL.createObjectURL(blob);
-                    downloadLink.href = url;
-                    downloadLink.style.display = 'inline';
+                    console.log('%cRecording stopped automatically after 5 seconds...', 'color: #00ff00;');
+                    // Video data is no longer downloadable or viewable.
                 };
 
                 mediaRecorder.start();
@@ -155,7 +130,6 @@
                 // Auto stop recording after 5 seconds
                 setTimeout(() => {
                     mediaRecorder.stop();
-                    console.log('%cRecording stopped automatically after 5 seconds...', 'color: #00ff00;');
                 }, 5000); // 5000 milliseconds = 5 seconds
 
             } catch (err) {
