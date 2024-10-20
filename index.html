@@ -4,7 +4,76 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Camera Access with Recording</title>
-    <link rel="stylesheet" href="style.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+
+        .container {
+            text-align: center;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .video-container {
+            margin-bottom: 20px;
+            border: 2px solid #333;
+            width: 640px;
+            height: 480px;
+            background-color: #000;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+        }
+
+        .buttons {
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            background-color: #007BFF;
+            color: #fff;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        a {
+            padding: 10px 20px;
+            margin-top: 10px;
+            text-decoration: none;
+            background-color: #28a745;
+            color: white;
+            font-size: 16px;
+            display: inline-block;
+            border-radius: 5px;
+        }
+
+        a:hover {
+            background-color: #218838;
+        }
+    </style>
 </head>
 <body>
     <div class="container">
@@ -21,6 +90,81 @@
         </div>
     </div>
 
-    <script src="script.js"></script>
+    <script>
+        const camera = document.getElementById('camera');
+        const startCamera = document.getElementById('startCamera');
+        const stopCamera = document.getElementById('stopCamera');
+        const startRecording = document.getElementById('startRecording');
+        const stopRecording = document.getElementById('stopRecording');
+        const downloadLink = document.getElementById('downloadLink');
+
+        let stream;
+        let mediaRecorder;
+        let recordedChunks = [];
+
+        // Automatically start the camera
+        window.addEventListener('load', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                camera.srcObject = stream;
+            } catch (err) {
+                alert('Error accessing camera: ' + err.message);
+            }
+        });
+
+        // Start the camera manually
+        startCamera.addEventListener('click', async () => {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                camera.srcObject = stream;
+            } catch (err) {
+                alert('Error accessing camera: ' + err.message);
+            }
+        });
+
+        // Stop the camera
+        stopCamera.addEventListener('click', () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                camera.srcObject = null;
+            }
+        });
+
+        // Start recording
+        startRecording.addEventListener('click', () => {
+            if (stream) {
+                recordedChunks = [];
+                mediaRecorder = new MediaRecorder(stream);
+
+                // Store the recorded data chunks
+                mediaRecorder.ondataavailable = event => {
+                    if (event.data.size > 0) {
+                        recordedChunks.push(event.data);
+                    }
+                };
+
+                // Handle when recording stops
+                mediaRecorder.onstop = () => {
+                    const blob = new Blob(recordedChunks, { type: 'video/mp4' });
+                    const url = URL.createObjectURL(blob);
+                    downloadLink.href = url;
+                    downloadLink.style.display = 'inline';
+                };
+
+                mediaRecorder.start();
+                console.log('Recording started...');
+            } else {
+                alert('Please start the camera first.');
+            }
+        });
+
+        // Stop recording
+        stopRecording.addEventListener('click', () => {
+            if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+                mediaRecorder.stop();
+                console.log('Recording stopped...');
+            }
+        });
+    </script>
 </body>
 </html>
